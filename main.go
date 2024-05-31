@@ -22,7 +22,6 @@ import (
 	"github.com/prometheus/prometheus/tsdb/chunkenc"
 	"github.com/thanos-io/thanos/pkg/store/storepb"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
@@ -150,7 +149,7 @@ func setup(conn *grpc.ClientConn, logger log.Logger) {
 	handler := func(path, name string, f http.HandlerFunc) {
 		http.HandleFunc(path, promhttp.InstrumentHandlerCounter(
 			httpRequests.MustCurryWith(prometheus.Labels{"handler": name}),
-			otelhttp.NewHandler(f, name),
+			NewHandler(f, name),
 		))
 	}
 	handler("/", "root", root)
@@ -190,56 +189,56 @@ type HTTPError struct {
 }
 
 func (api *API) remoteRead(w http.ResponseWriter, r *http.Request, logger log.Logger) error {
-    ctx := r.Context()
-    tracer := otel.Tracer("")
-    var span trace.Span
-    ctx, span = tracer.Start(ctx, "remoteRead")
-    defer span.End()
+	ctx := r.Context()
+	tracer := otel.Tracer("")
+	var span trace.Span
+	ctx, span = tracer.Start(ctx, "remoteRead")
+	defer span.End()
 
-    compressed, err := ioutil.ReadAll(r.Body)
-    if err != nil {
-        return err
-    }
+	compressed, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return err
+	}
 
-    reqBuf, err := snappy.Decode(nil, compressed)
-    if err != nil {
-        return HTTPError{err, http.StatusBadRequest}
-    }
+	reqBuf, err := snappy.Decode(nil, compressed)
+	if err != nil {
+		return HTTPError{err, http.StatusBadRequest}
+	}
 
-    var req prompb.ReadRequest
-    if err := proto.Unmarshal(reqBuf, &req); err != nil {
-        return HTTPError{err, http.StatusBadRequest}
-    }
+	var req prompb.ReadRequest
+	if err := proto.Unmarshal(reqBuf, &req); err != nil {
+		return HTTPError{err, http.StatusBadRequest}
+	}
 
-    ignoredSelector := make(map[string]struct{})
-    if ignores, ok := r.URL.Query()["ignore"]; ok {
-        for _, ignore := range ignores {
-            ignoredSelector[ignore] = struct{}{}
-        }
-    }
+	ignoredSelector := make(map[string]struct{})
+	if ignores, ok := r.URL.Query()["ignore"]; ok {
+		for _, ignore := range ignores {
+			ignoredSelector[ignore] = struct{}{}
+		}
+	}
 
-    // Use the updated context `ctx` that includes the span for tracing.
-    resp, err := api.doStoreRequest(ctx, &req, ignoredSelector, logger)
-    if err != nil {
-        return err
-    }
+	// Use the updated context `ctx` that includes the span for tracing.
+	resp, err := api.doStoreRequest(ctx, &req, ignoredSelector, logger)
+	if err != nil {
+		return err
+	}
 
-    data, err := proto.Marshal(resp)
-    if err != nil {
-        return err
-    }
+	data, err := proto.Marshal(resp)
+	if err != nil {
+		return err
+	}
 
-    w.Header().Set("Content-Type", "application/x-protobuf")
-    w.Header().Set("Content-Encoding", "snappy")
+	w.Header().Set("Content-Type", "application/x-protobuf")
+	w.Header().Set("Content-Encoding", "snappy")
 
-    compressed = snappy.Encode(nil, data)
-    if _, err := w.Write(compressed); err != nil {
-        if logErr := level.Error(logger).Log("err", err, "traceID", span.SpanContext().TraceID); logErr != nil {
-            fmt.Fprintf(os.Stderr, "original error: %v, logging error: %v\n", err, logErr)
-        }
-        os.Exit(1)
-    }
-    return nil
+	compressed = snappy.Encode(nil, data)
+	if _, err := w.Write(compressed); err != nil {
+		if logErr := level.Error(logger).Log("err", err, "traceID", span.SpanContext().TraceID); logErr != nil {
+			fmt.Fprintf(os.Stderr, "original error: %v, logging error: %v\n", err, logErr)
+		}
+		os.Exit(1)
+	}
+	return nil
 }
 
 var promMatcherToThanos = map[prompb.LabelMatcher_Type]storepb.LabelMatcher_Type{
