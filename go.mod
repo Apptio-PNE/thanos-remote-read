@@ -25,11 +25,7 @@ require (
 	github.com/cespare/xxhash v1.1.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/go-logfmt/logfmt v0.5.0 // indirect
-<<<<<<< Updated upstream
-	github.com/golang/protobuf v1.5.0 // indirect
-=======
 	github.com/golang/protobuf v1.5.3 // indirect
->>>>>>> Stashed changes
 	github.com/grpc-ecosystem/grpc-gateway v1.14.4 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -37,16 +33,6 @@ require (
 	github.com/prometheus/common v0.26.0 // indirect
 	github.com/prometheus/procfs v0.6.0 // indirect
 	go.opentelemetry.io/otel/sdk v0.16.0 // indirect
-<<<<<<< Updated upstream
-	golang.org/x/net v0.0.0-20201209123823-ac852fbbde11 // indirect
-	golang.org/x/oauth2 v0.0.0-20201208152858-08078c50e5b5 // indirect
-	golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9 // indirect
-	golang.org/x/sys v0.0.0-20210104204734-6f8348627aad // indirect
-	golang.org/x/text v0.3.4 // indirect
-	google.golang.org/api v0.36.0 // indirect
-	google.golang.org/genproto v0.0.0-20201214200347-8c77b98c765d // indirect
-	google.golang.org/protobuf v1.33.0 // indirect
-=======
 	golang.org/x/net v0.25.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.20.0 // indirect
@@ -54,5 +40,4 @@ require (
 	google.golang.org/api v0.110.0 // indirect
 	google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
->>>>>>> Stashed changes
 )
